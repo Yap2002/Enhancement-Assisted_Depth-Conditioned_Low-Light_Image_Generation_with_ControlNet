@@ -15,39 +15,35 @@ export PYTHONUNBUFFERED=1
 
 pip install lpips scikit-image --quiet
 
-echo "============================================"
-echo "Stage 4: 批量生成 + 定量评估"
-echo "============================================"
+echo "Stage 4: batch generation and quantitative evaluation"
 
 echo ""
-echo ">>> [1/4] M1 批量生成中..."
+echo ">>> [1/4] Generating M1 images..."
 python batch_generate.py \
     --model_path /mnt/scratch/fkwt0359/output_model \
     --test_dir ./hpc_ready_dataset/test \
     --output_dir ./eval_results/M1_generated
 
 echo ""
-echo ">>> [2/4] M2 批量生成中..."
+echo ">>> [2/4] Generating M2 images..."
 python batch_generate.py \
     --model_path /mnt/scratch/fkwt0359/output_model_ablation \
     --test_dir ./ablation_dataset/test \
     --output_dir ./eval_results/M2_generated
 
 echo ""
-echo ">>> [3/4] M1 定量评估中..."
+echo ">>> [3/4] Evaluating M1..."
 python evaluate.py \
     --generated_dir ./eval_results/M1_generated \
     --gt_dir ./hpc_ready_dataset/test/images \
     --output_csv ./eval_results/M1_metrics.csv
 
 echo ""
-echo ">>> [4/4] M2 定量评估中..."
+echo ">>> [4/4] Evaluating M2..."
 python evaluate.py \
     --generated_dir ./eval_results/M2_generated \
     --gt_dir ./ablation_dataset/test/images \
     --output_csv ./eval_results/M2_metrics.csv
 
 echo ""
-echo "============================================"
-echo "全部完成! 结果在 ./eval_results/"
-echo "============================================"
+echo "Finished. Results are in ./eval_results/"

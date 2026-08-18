@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+"""Compute shuffled-pair reference values for paired image metrics.
+
+A fixed cyclic shift creates a reproducible derangement. Comparing matched
+and shuffled targets indicates whether each metric responds to the intended
+image correspondence rather than only to general low-light appearance.
+"""
+
 import os
 import sys
 import json
@@ -9,7 +17,6 @@ from PIL import Image
 from torchvision import transforms
 from skimage.metrics import structural_similarity as ssim_fn
 
-# ----------------------------------------------------------------------
 BASE = os.path.expanduser("~/nobackup")
 sys.path.insert(0, BASE)
 
@@ -33,13 +40,12 @@ try:
     from edge_consistency import edge_consistency as edge_fn
     EDGE_OK = True
 except Exception as e:
-    print(f"[WARN] 无法 import edge_consistency.edge_consistency: {e}")
-    print("       Edge 随机配对将跳过 (LPIPS/SSIM 不受影响)。")
+    print(f"[WARN] Could not import edge_consistency.edge_consistency: {e}")
+    print("       Shuffled edge evaluation will be skipped; LPIPS and SSIM are unaffected.")
     edge_fn = None
     EDGE_OK = False
 
 
-# ----------------------------------------------------------------------
 def list_pngs(d):
     return sorted(f for f in os.listdir(d) if f.lower().endswith(".png"))
 
@@ -59,7 +65,7 @@ _to_tensor = transforms.Compose([
 
 
 def load_lpips_tensor(path):
-    """LPIPS 需 [-1,1]"""
+    """Load an image as an LPIPS tensor in the range [-1, 1]."""
     t = _to_tensor(Image.open(path).convert("RGB"))
     return (t * 2 - 1).unsqueeze(0).to(DEVICE)
 
@@ -69,7 +75,6 @@ def load_np01(path):
     return np.asarray(img).astype(np.float32) / 255.0
 
 
-# ----------------------------------------------------------------------
 def run_pipeline(name, gen_dir, depth_dir, lpips_model):
     gen_files = list_pngs(gen_dir)
     stems = [os.path.splitext(f)[0] for f in gen_files]
@@ -87,7 +92,7 @@ def run_pipeline(name, gen_dir, depth_dir, lpips_model):
         dp_m = os.path.join(depth_dir, stem + ".png")
         dp_s = os.path.join(depth_dir, stems[shuffled_idx[i]] + ".png")
 
-        # ---- LPIPS ----
+        # LPIPS and SSIM use the same matched and shuffled target pairs.
         if gt_m and gt_s:
             g = load_lpips_tensor(gen_path)
             with torch.no_grad():
@@ -95,14 +100,13 @@ def run_pipeline(name, gen_dir, depth_dir, lpips_model):
                     float(lpips_model(g, load_lpips_tensor(gt_m)).item()))
                 res["lpips"]["shuffled"].append(
                     float(lpips_model(g, load_lpips_tensor(gt_s)).item()))
-            # ---- SSIM ----
             gnp = load_np01(gen_path)
             res["ssim"]["matched"].append(
                 float(ssim_fn(gnp, load_np01(gt_m), channel_axis=2, data_range=1.0)))
             res["ssim"]["shuffled"].append(
                 float(ssim_fn(gnp, load_np01(gt_s), channel_axis=2, data_range=1.0)))
 
-        # ---- Edge ----
+        # Edge consistency uses matched and shuffled depth maps.
         if EDGE_OK and os.path.exists(dp_m) and os.path.exists(dp_s):
             try:
                 res["edge"]["matched"].append(float(edge_fn(dp_m, gen_path, SIZE)))
@@ -119,31 +123,29 @@ def summarize(name, res):
         m = res[k]["matched"]
         s = res[k]["shuffled"]
         if not m:
-            lines.append(f"  {k.upper():6}: (无数据)")
+            lines.append(f"  {k.upper():6}: no data")
             continue
         mm, sm = float(np.mean(m)), float(np.mean(s))
         rep = REPORTED[name].get(k)
         chk = ""
         if rep is not None:
             diff = abs(mm - rep)
-            flag = "OK" if diff < (0.03 if k != "edge" else 0.01) else "⚠尺度不一致!"
-            chk = f"  [matched≈已报告{rep} ? diff={diff:.4f} {flag}]"
+            flag = "OK" if diff < (0.03 if k != "edge" else 0.01) else "scale mismatch"
+            chk = f"  [reported={rep}, difference={diff:.4f}, {flag}]"
         gap = mm - sm
         lines.append(f"  {k.upper():6}: matched={mm:.4f}  shuffled={sm:.4f}  gap={gap:+.4f}{chk}")
     return "\n".join(lines)
 
 
 def main():
-    print(f"设备: {DEVICE}")
+    print(f"Device: {DEVICE}")
     import lpips
     lpips_model = lpips.LPIPS(net="alex").to(DEVICE)
 
     out = []
-    out.append("=" * 70)
-    out.append("随机配对下限 (matched vs shuffled)")
-    out.append("方向: LPIPS 越低越好 -> matched 应 < shuffled")
-    out.append("      SSIM/Edge 越高越好 -> matched 应 > shuffled")
-    out.append("=" * 70)
+    out.append("Shuffled-pair references (matched versus shuffled)")
+    out.append("LPIPS: matched should be lower than shuffled.")
+    out.append("SSIM and edge consistency: matched should be higher than shuffled.")
 
     for name, gen_dir, depth_dir in [
         ("baseline", BASELINE_GEN, BASELINE_DEPTH),
@@ -154,20 +156,16 @@ def main():
         print(block)
         out.append(block)
 
-    out.append("\n" + "=" * 70)
-    out.append("读法:")
-    out.append("  * gap 越大, 说明生成图越是在重建【正确目标】而非随便一张低光图。")
-    out.append("  * 若某指标 matched≈shuffled (gap≈0), 说明该指标在低光域判别力弱")
-    out.append("    —— 对 SSIM 若如此, 正好解释你已知的 SSIM 不显著。")
-    out.append("  * [尺度校验] matched 若≈已报告值, 证明本脚本与 evaluate.py 同尺度,")
-    out.append("    shuffled 数可直接与主表并列; 若 ⚠, 需把 LPIPS net 调成与 evaluate.py 一致。")
-    out.append("=" * 70)
+    out.append("\nInterpretation:")
+    out.append("  * A larger gap indicates stronger sensitivity to the correct target pairing.")
+    out.append("  * A near-zero gap indicates weak discrimination within the low-light domain.")
+    out.append("  * Reported-value checks confirm that metric configurations use comparable scales.")
 
     summary = "\n".join(out)
     with open(os.path.join(BASE, "eval_results", "anchor_lowerbounds.txt"),
               "w", encoding="utf-8") as f:
         f.write(summary + "\n")
-    print(f"\n已写入 eval_results/anchor_lowerbounds.txt")
+    print("\nResults saved to eval_results/anchor_lowerbounds.txt")
 
 
 if __name__ == "__main__":

@@ -15,14 +15,10 @@ export PYTHONUNBUFFERED=1
 
 pip install pytorch-fid --quiet
 
-echo "============================================"
 echo "FID Evaluation: M1 vs M2"
-echo "============================================"
 
 cd /users/fkwt0359/nobackup
 python compute_fid.py
 
 echo ""
-echo "============================================"
-echo "完成! 结果在 fid_results.txt"
-echo "============================================"
+echo "Finished. Results are in fid_results.txt"
