@@ -2,7 +2,7 @@ import re
 import matplotlib.pyplot as plt
 
 def extract_loss(log_file):
-    """从训练日志中提取 step 和 loss"""
+    """Extract training steps and loss values from a Slurm log."""
     steps = []
     losses = []
     pattern = re.compile(r"(\d+)/10000\s+\[.*?loss=([0-9.]+)")
@@ -31,8 +31,8 @@ m2_steps, m2_losses = extract_loss("ablation_training_log.err")
 m1_smoothed = moving_average(m1_losses, window_size=100)
 m2_smoothed = moving_average(m2_losses, window_size=100)
 
-print(f"M1: {len(m1_steps)} 个数据点, 最终 smoothed loss: {m1_smoothed[-1]:.4f}")
-print(f"M2: {len(m2_steps)} 个数据点, 最终 smoothed loss: {m2_smoothed[-1]:.4f}")
+print(f"M1: {len(m1_steps)} points, final smoothed loss: {m1_smoothed[-1]:.4f}")
+print(f"M2: {len(m2_steps)} points, final smoothed loss: {m2_smoothed[-1]:.4f}")
 
 plt.figure(figsize=(12, 7), dpi=300)
 

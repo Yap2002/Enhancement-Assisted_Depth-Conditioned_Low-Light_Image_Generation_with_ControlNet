@@ -13,10 +13,10 @@ with open('./eval_results/M2_metrics.csv') as f:
 
 diffs = [(f, m2[f]-m1[f]) for f in m1 if f in m2]
 
-print("M1 明显更好 top 5:")
+print("Five largest LPIPS improvements for M1:")
 for f, d in sorted(diffs, key=lambda x: x[1], reverse=True)[:5]:
-    print(f"  {f}  差值={d:.4f}  M1={m1[f]:.4f}  M2={m2[f]:.4f}")
+    print(f"  {f}  difference={d:.4f}  M1={m1[f]:.4f}  M2={m2[f]:.4f}")
 
-print("\nM2 明显更好 top 5:")
+print("\nFive largest LPIPS improvements for M2:")
 for f, d in sorted(diffs, key=lambda x: x[1])[:5]:
-    print(f"  {f}  差值={d:.4f}  M1={m1[f]:.4f}  M2={m2[f]:.4f}")
+    print(f"  {f}  difference={d:.4f}  M1={m1[f]:.4f}  M2={m2[f]:.4f}")

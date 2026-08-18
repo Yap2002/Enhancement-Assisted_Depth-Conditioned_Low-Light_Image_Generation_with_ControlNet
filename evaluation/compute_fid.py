@@ -17,7 +17,7 @@ import torch
 from pytorch_fid.fid_score import calculate_fid_given_paths
 
 
-# ============== Configuration ==============
+# Evaluation paths
 M1_DIR = "/users/fkwt0359/nobackup/eval_results/M1_generated"
 M2_DIR = "/users/fkwt0359/nobackup/eval_results/M2_generated"
 REAL_DIR = "/users/fkwt0359/nobackup/hpc_ready_dataset/test/images"
@@ -26,7 +26,6 @@ BATCH_SIZE = 32
 DIMS = 2048               # Inception feature dim (2048 is standard)
 NUM_WORKERS = 4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-# ===========================================
 
 
 def count_images(folder):

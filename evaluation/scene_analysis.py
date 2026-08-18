@@ -1,14 +1,4 @@
-"""
-场景分组定量分析
-================
-按光照类型和室内/室外分组，对比 M1 和 M2 的 LPIPS 和 SSIM。
-
-用法:
-    python scene_analysis.py
-
-输出:
-    scene_analysis_results.txt
-"""
+"""Compare M1 and M2 metrics by lighting condition and location."""
 
 import os
 import csv
@@ -19,7 +9,6 @@ CLASSLIST_PATH  = "./imageclasslist.txt"
 M1_METRICS_PATH = "./eval_results/M1_metrics.csv"
 M2_METRICS_PATH = "./eval_results/M2_metrics.csv"
 OUTPUT_PATH     = "./eval_results/scene_analysis_results.txt"
-# ====================
 
 CLASS_NAMES = {
     1:'Bicycle', 2:'Boat',  3:'Bottle', 4:'Bus',   5:'Car',
@@ -41,9 +30,9 @@ def load_classlist(path):
             parts = line.strip().split()
             if len(parts) < 4 or not parts[2].isdigit():
                 continue
-            raw  = os.path.splitext(parts[0])[0]       # 2015_00001
-            cls  = CLASS_NAMES.get(int(parts[1]), '')   # Bicycle
-            key  = f"{cls}_{raw}"                        # Bicycle_2015_00001
+            raw  = os.path.splitext(parts[0])[0]
+            cls  = CLASS_NAMES.get(int(parts[1]), '')
+            key  = f"{cls}_{raw}"
             lighting_map[key] = int(parts[2])
             indoor_map[key]   = int(parts[3])
     return lighting_map, indoor_map
@@ -86,12 +75,12 @@ def main():
         matched += 1
 
     lines = []
-    lines.append(f"匹配成功: {matched} 张 / 共 {len(m1)} 张\n")
+    lines.append(f"Matched images: {matched}/{len(m1)}\n")
 
     lines.append("=" * 90)
-    lines.append("按光照类型分组")
-    lines.append(f"{'光照':<10} {'M1_LPIPS':>9} {'M2_LPIPS':>9} {'LPIPS差':>8} "
-                 f"{'M1_SSIM':>9} {'M2_SSIM':>9} {'SSIM差':>8} {'N':>5}  {'判断'}")
+    lines.append("Grouped by lighting condition")
+    lines.append(f"{'Lighting':<10} {'M1_LPIPS':>9} {'M2_LPIPS':>9} {'LPIPS_diff':>10} "
+                 f"{'M1_SSIM':>9} {'M2_SSIM':>9} {'SSIM_diff':>9} {'N':>5}  {'Assessment'}")
     lines.append("-" * 90)
 
     for lt in sorted(by_lt):
@@ -99,16 +88,16 @@ def main():
         l1 = np.mean(d['m1_l']); l2 = np.mean(d['m2_l'])
         s1 = np.mean(d['m1_s']); s2 = np.mean(d['m2_s'])
         n  = len(d['m1_l'])
-        lpips_tag = "M1好" if (l2 - l1) > 0.01 else ("M2好" if (l2 - l1) < -0.01 else "相近")
-        ssim_tag  = "M1好" if (s1 - s2) > 0.01 else ("M2好" if (s1 - s2) < -0.01 else "相近")
+        lpips_tag = "M1" if (l2 - l1) > 0.01 else ("M2" if (l2 - l1) < -0.01 else "similar")
+        ssim_tag  = "M1" if (s1 - s2) > 0.01 else ("M2" if (s1 - s2) < -0.01 else "similar")
         tag = f"LPIPS:{lpips_tag} SSIM:{ssim_tag}"
         lines.append(f"{LIGHTING_NAMES[lt]:<10} {l1:>9.4f} {l2:>9.4f} {l2-l1:>8.4f} "
                      f"{s1:>9.4f} {s2:>9.4f} {s1-s2:>8.4f} {n:>5}  {tag}")
 
     lines.append("\n" + "=" * 90)
-    lines.append("按室内/室外分组")
-    lines.append(f"{'类型':<10} {'M1_LPIPS':>9} {'M2_LPIPS':>9} {'LPIPS差':>8} "
-                 f"{'M1_SSIM':>9} {'M2_SSIM':>9} {'SSIM差':>8} {'N':>5}  {'判断'}")
+    lines.append("Grouped by indoor/outdoor location")
+    lines.append(f"{'Location':<10} {'M1_LPIPS':>9} {'M2_LPIPS':>9} {'LPIPS_diff':>10} "
+                 f"{'M1_SSIM':>9} {'M2_SSIM':>9} {'SSIM_diff':>9} {'N':>5}  {'Assessment'}")
     lines.append("-" * 90)
 
     for ind, label in [(1, 'Indoor'), (2, 'Outdoor')]:
@@ -118,8 +107,8 @@ def main():
         l1 = np.mean(d['m1_l']); l2 = np.mean(d['m2_l'])
         s1 = np.mean(d['m1_s']); s2 = np.mean(d['m2_s'])
         n  = len(d['m1_l'])
-        lpips_tag = "M1好" if (l2 - l1) > 0.01 else ("M2好" if (l2 - l1) < -0.01 else "相近")
-        ssim_tag  = "M1好" if (s1 - s2) > 0.01 else ("M2好" if (s1 - s2) < -0.01 else "相近")
+        lpips_tag = "M1" if (l2 - l1) > 0.01 else ("M2" if (l2 - l1) < -0.01 else "similar")
+        ssim_tag  = "M1" if (s1 - s2) > 0.01 else ("M2" if (s1 - s2) < -0.01 else "similar")
         tag = f"LPIPS:{lpips_tag} SSIM:{ssim_tag}"
         lines.append(f"{label:<10} {l1:>9.4f} {l2:>9.4f} {l2-l1:>8.4f} "
                      f"{s1:>9.4f} {s2:>9.4f} {s1-s2:>8.4f} {n:>5}  {tag}")
@@ -130,7 +119,7 @@ def main():
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, 'w') as f:
         f.write(output)
-    print(f"\n结果已保存到: {OUTPUT_PATH}")
+    print(f"\nResults saved to {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

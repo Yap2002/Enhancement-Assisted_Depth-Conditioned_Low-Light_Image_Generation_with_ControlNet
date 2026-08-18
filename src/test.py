@@ -23,12 +23,12 @@ os.makedirs(output_dir, exist_ok=True)
 checkpoints = ["2000", "4000", "6000", "8000", "10000"]
 base_model_path = "runwayml/stable-diffusion-v1-5"
 
-print("开始批量测试不同阶段的模型...")
+print("Testing checkpoints...")
 
 for ckpt in checkpoints:
     model_path = f"./my_scratch_models/checkpoint-{ckpt}/controlnet"
     
-    print(f"\n========== 正在加载并测试 Checkpoint: {ckpt} ==========")
+    print(f"\nLoading checkpoint {ckpt}")
     
     controlnet = ControlNetModel.from_pretrained(model_path, torch_dtype=torch.float16)
     
@@ -53,11 +53,11 @@ for ckpt in checkpoints:
     
     output_name = os.path.join(output_dir, f"test_result_Chair_2015_04229_{ckpt}.png")
     image.save(output_name)
-    print(f"✅ {output_name} 保存成功！")
+    print(f"Saved {output_name}")
     
     del pipe
     del controlnet
     torch.cuda.empty_cache()
     gc.collect()
 
-print("\n 5个阶段的图像已全部生成完毕！")
+print("\nFinished generating images for all five checkpoints.")

@@ -1,14 +1,4 @@
-"""
-Edge-Consistency 场景分组分析
-================================
-按光照类型和室内/室外分组，对比 M1 和 M2 的 Edge-Consistency。
-
-用法:
-    python edge_scene_analysis.py
-
-输出:
-    eval_results/edge_scene_analysis_results.txt
-"""
+"""Compare M1 and M2 edge consistency by lighting and location."""
 
 import os
 import csv
@@ -19,7 +9,6 @@ CLASSLIST_PATH  = "./imageclasslist.txt"
 M1_EC_PATH      = "./eval_results/edge_consistency_M1.csv"
 M2_EC_PATH      = "./eval_results/edge_consistency_M2.csv"
 OUTPUT_PATH     = "./eval_results/edge_scene_analysis_results.txt"
-# ====================
 
 CLASS_NAMES = {
     1:'Bicycle', 2:'Boat',  3:'Bottle', 4:'Bus',   5:'Car',
@@ -79,11 +68,11 @@ def main():
         matched += 1
 
     lines = []
-    lines.append(f"匹配成功: {matched} 张\n")
+    lines.append(f"Matched images: {matched}\n")
 
     lines.append("=" * 75)
-    lines.append("按光照类型分组 — Edge-Consistency (越高越好)")
-    lines.append(f"{'光照':<10} {'M1_EC':>8} {'M2_EC':>8} {'差值M1-M2':>10} {'N':>6}  {'判断'}")
+    lines.append("Edge consistency by lighting condition (higher is better)")
+    lines.append(f"{'Lighting':<10} {'M1_EC':>8} {'M2_EC':>8} {'M1-M2':>10} {'N':>6}  {'Assessment'}")
     lines.append("-" * 75)
 
     for lt in sorted(by_lt):
@@ -92,12 +81,12 @@ def main():
         v2  = np.mean(d['m2'])
         diff = v1 - v2
         n   = len(d['m1'])
-        tag = "← M1好" if diff > 0.005 else ("← M2好" if diff < -0.005 else "相近")
+        tag = "M1" if diff > 0.005 else ("M2" if diff < -0.005 else "similar")
         lines.append(f"{LIGHTING_NAMES[lt]:<10} {v1:>8.4f} {v2:>8.4f} {diff:>10.4f} {n:>6}  {tag}")
 
     lines.append("\n" + "=" * 75)
-    lines.append("按室内/室外分组 — Edge-Consistency (越高越好)")
-    lines.append(f"{'类型':<10} {'M1_EC':>8} {'M2_EC':>8} {'差值M1-M2':>10} {'N':>6}  {'判断'}")
+    lines.append("Edge consistency by indoor/outdoor location (higher is better)")
+    lines.append(f"{'Location':<10} {'M1_EC':>8} {'M2_EC':>8} {'M1-M2':>10} {'N':>6}  {'Assessment'}")
     lines.append("-" * 75)
 
     for ind, label in [(1, 'Indoor'), (2, 'Outdoor')]:
@@ -108,16 +97,16 @@ def main():
         v2   = np.mean(d['m2'])
         diff = v1 - v2
         n    = len(d['m1'])
-        tag  = "← M1好" if diff > 0.005 else ("← M2好" if diff < -0.005 else "相近")
+        tag  = "M1" if diff > 0.005 else ("M2" if diff < -0.005 else "similar")
         lines.append(f"{label:<10} {v1:>8.4f} {v2:>8.4f} {diff:>10.4f} {n:>6}  {tag}")
 
     all_m1 = [v for d in by_lt.values() for v in d['m1']]
     all_m2 = [v for d in by_lt.values() for v in d['m2']]
     lines.append("\n" + "=" * 75)
-    lines.append("总体")
+    lines.append("Overall")
     lines.append(f"M1: {np.mean(all_m1):.4f} ± {np.std(all_m1):.4f}")
     lines.append(f"M2: {np.mean(all_m2):.4f} ± {np.std(all_m2):.4f}")
-    lines.append(f"差值 (M1-M2): {np.mean(all_m1)-np.mean(all_m2):.4f}")
+    lines.append(f"Difference (M1-M2): {np.mean(all_m1)-np.mean(all_m2):.4f}")
 
     output = "\n".join(lines)
     print(output)
@@ -125,7 +114,7 @@ def main():
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, 'w') as f:
         f.write(output)
-    print(f"\n结果已保存到: {OUTPUT_PATH}")
+    print(f"\nResults saved to {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":
