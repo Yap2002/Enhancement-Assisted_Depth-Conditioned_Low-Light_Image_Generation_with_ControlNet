@@ -1,28 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-随机配对下限 (shuffled lower bound) —— LPIPS / SSIM / Edge-Consistency
-================================================================
-目的: 给逐图配对指标造 anchor。逻辑不同于 FID:
-  这些指标衡量"生成图 X vs 它对应的目标 X"。random-pairing 把生成图和
-  【打乱后不对应】的目标去算, 得到"两张无关低光图之间"的天然基线。
-  若 matched 明显优于 shuffled, 证明生成图是在重建【正确目标】, 而非
-  碰巧长得像随便一张低光图。
-
-关键: 随机配对必须和主结果同尺度才可比。
-  - Edge: import 你 edge_consistency.py 里的函数, 保证同尺度。
-  - LPIPS/SSIM: 本脚本同时算 matched 和 shuffled, 并打印 matched 与
-    你已报告值(0.7159/0.1795 等)对比。matched 对得上 => shuffled 可信。
-
-打乱方式: 固定 roll(+SHIFT), 保证无自配对 (derangement), 可复现。
-================================================================
-前置: pip install lpips scikit-image
-      本脚本需放在 ~/nobackup 下 (与 edge_consistency.py 同目录) 才能 import。
-      若 import edge_consistency 触发它跑全套评估, 说明该文件的主逻辑没有
-      放在 `if __name__ == "__main__":` 下 —— 加上即可。
-================================================================
-"""
-
 import os
 import sys
 import json
