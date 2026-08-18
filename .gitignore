@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+venv/
+
+# Local datasets, model weights, caches, and generated images
+ablation_dataset/
+hpc_ready_dataset/
+hf_cache/
+checkpoints/
+output_model*/
+*.bin
+*.pt
+*.pth
+*.safetensors
+
+# HPC logs and temporary archives
+*.err
+*.out
+*.tar.gz
+
