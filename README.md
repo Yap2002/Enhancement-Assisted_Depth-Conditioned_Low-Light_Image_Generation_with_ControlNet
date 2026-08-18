@@ -22,6 +22,7 @@ scripts/      Slurm job scripts used on the University of Leeds HPC service
 splits/       Exact train, validation, test, and complete filename lists
 results/      Per-image metrics and aggregate evaluation summaries
 figures/      Training-loss figures used during analysis
+DATA_LICENSE.md  Data provenance, redistribution, and citation information
 ```
 
 ## Environment
@@ -48,7 +49,16 @@ The principal human-readable result is `results/summary_baseline_enhanced.txt`. 
 
 ## Data availability
 
-The exact split manifests are included in `splits/`. Image data and trained weights are excluded from ordinary Git history because of their size. Dataset redistribution is pending verification of the source licence; once verified, this section should provide the approved archive or repository link, checksums, and preparation instructions.
+The experiments use the public ExDark dataset. Download the original images from the [official ExDark repository](https://github.com/cs-chan/Exclusively-Dark-Image-Dataset) or the [Universiti Malaya Research Data Repository](https://researchdata.um.edu.my/dataset.xhtml?persistentId=doi:10.22452/RD/JUSQEK). The original images are not duplicated in this Git repository.
+
+The exact experimental partitions are recorded in `splits/train.txt`, `splits/validation.txt`, and `splits/test.txt`. `splits/all_images.txt` is the ExDark metadata index: it contains one header row followed by 7,363 image records, rather than 7,364 images. The resulting experiment uses 5,692 training, 711 validation, and 712 test images.
+
+The two prepared variants are:
+
+- `ablation_dataset`: original low-light ExDark images and their estimated depth maps (M2/baseline).
+- `hpc_ready_dataset`: Zero-DCE-enhanced images and their estimated depth maps (M1/enhanced).
+
+Large derived-image archives and trained weights are kept outside ordinary Git history. A public archive should include a checksum manifest and preserve the filenames in `splits/`; its URL can be added here after upload. See `DATA_LICENSE.md` for provenance, attribution, and redistribution notes.
 
 ## Reproducibility notes
 
@@ -57,4 +67,10 @@ The exact split manifests are included in `splits/`. Image data and trained weig
 - The `baseline` and `enhanced` result filenames are descriptive aliases retained for clarity.
 - Skipped-image lists are included so that metric sample sizes can be audited.
 - Large checkpoints, caches, generated-image directories, and raw Slurm logs are intentionally excluded.
+- Reconstructing the reported partitions requires using the committed manifests rather than creating a new random split.
 
+## Dataset citation
+
+If you use ExDark, cite the dataset paper:
+
+> Y. P. Loh and C. S. Chan, "Getting to Know Low-light Images with The Exclusively Dark Dataset," *Computer Vision and Image Understanding*, 2019. https://doi.org/10.1016/j.cviu.2019.04.010

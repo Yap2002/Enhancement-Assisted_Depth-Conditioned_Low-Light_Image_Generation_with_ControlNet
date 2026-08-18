@@ -1,4 +1,5 @@
 __pycache__/
+staging/
 *.py[cod]
 .DS_Store
 .venv/
@@ -19,4 +20,3 @@ output_model*/
 *.err
 *.out
 *.tar.gz
-
