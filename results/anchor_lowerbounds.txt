@@ -1,0 +1,24 @@
+======================================================================
+随机配对下限 (matched vs shuffled)
+方向: LPIPS 越低越好 -> matched 应 < shuffled
+      SSIM/Edge 越高越好 -> matched 应 > shuffled
+======================================================================
+
+----- baseline -----
+  LPIPS : matched=0.7168  shuffled=0.8330  gap=-0.1162  [matched≈已报告0.7159 ? diff=0.0009 OK]
+  SSIM  : matched=0.1796  shuffled=0.1619  gap=+0.0177  [matched≈已报告0.1795 ? diff=0.0001 OK]
+  EDGE  : matched=0.1875  shuffled=0.0718  gap=+0.1156  [matched≈已报告0.1873 ? diff=0.0002 OK]
+
+----- enhanced -----
+  LPIPS : matched=0.7061  shuffled=0.8189  gap=-0.1128  [matched≈已报告0.7052 ? diff=0.0009 OK]
+  SSIM  : matched=0.1767  shuffled=0.1593  gap=+0.0174  [matched≈已报告0.1766 ? diff=0.0001 OK]
+  EDGE  : matched=0.2051  shuffled=0.0781  gap=+0.1270  [matched≈已报告0.2049 ? diff=0.0002 OK]
+
+======================================================================
+读法:
+  * gap 越大, 说明生成图越是在重建【正确目标】而非随便一张低光图。
+  * 若某指标 matched≈shuffled (gap≈0), 说明该指标在低光域判别力弱
+    —— 对 SSIM 若如此, 正好解释你已知的 SSIM 不显著。
+  * [尺度校验] matched 若≈已报告值, 证明本脚本与 evaluate.py 同尺度,
+    shuffled 数可直接与主表并列; 若 ⚠, 需把 LPIPS net 调成与 evaluate.py 一致。
+======================================================================
