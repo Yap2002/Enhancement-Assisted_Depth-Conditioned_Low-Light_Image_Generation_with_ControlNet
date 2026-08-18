@@ -1,17 +1,11 @@
-"""
-Edge-Consistency 评估
-======================
-计算深度图边缘与生成图梯度的一致性，衡量 ControlNet 对深度条件的遵从程度。
+"""Measure agreement between depth edges and generated-image gradients.
 
-用法:
-    python edge_consistency.py
-
-输出:
+Outputs:
     eval_results/edge_consistency_results.txt
     eval_results/edge_consistency_M1.csv
     eval_results/edge_consistency_M2.csv
 
-需要安装: pip install opencv-python
+Requires opencv-python.
 """
 
 import os
@@ -24,18 +18,10 @@ M2_GEN_DIR   = "./eval_results/M2_generated"
 M1_DEPTH_DIR = "./hpc_ready_dataset/test/depths"
 M2_DEPTH_DIR = "./ablation_dataset/test/depths"
 OUTPUT_DIR   = "./eval_results"
-# ====================
 
 
 def edge_consistency(depth_path, gen_path, size=512):
-    """
-    计算单张图的 edge-consistency。
-    方法：
-      1. 对深度图用 Canny 提取边缘
-      2. 对生成图计算 Sobel 梯度
-      3. 在深度边缘位置上，取生成图梯度的均值
-    越高说明生成图在深度边缘处有更强的梯度，即结构一致性更好。
-    """
+    """Return the mean generated-image gradient at Canny depth edges."""
     depth = cv2.imread(depth_path, cv2.IMREAD_GRAYSCALE)
     gen   = cv2.imread(gen_path,   cv2.IMREAD_GRAYSCALE)
 
@@ -65,7 +51,7 @@ def evaluate_model(model_name, gen_dir, depth_dir, output_csv):
     per_image = []
 
     fnames = sorted([f for f in os.listdir(gen_dir) if f.endswith('.png')])
-    print(f"\n{model_name}: 共 {len(fnames)} 张待评估...")
+    print(f"\n{model_name}: evaluating {len(fnames)} images...")
 
     for i, fname in enumerate(fnames):
         name       = os.path.splitext(fname)[0]
@@ -81,7 +67,7 @@ def evaluate_model(model_name, gen_dir, depth_dir, output_csv):
             per_image.append({'filename': name, 'edge_consistency': score})
 
         if (i + 1) % 100 == 0 or (i + 1) == len(fnames):
-            print(f"  进度: {i+1}/{len(fnames)}")
+            print(f"  Progress: {i+1}/{len(fnames)}")
 
     with open(output_csv, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['filename', 'edge_consistency'])
@@ -108,11 +94,11 @@ def main():
 
     result = f"""
 {"=" * 55}
-Edge-Consistency 评估结果 (越高越好)
+Edge-consistency results (higher is better)
 {"=" * 55}
-M1 (增强图): {m1_mean:.4f} ± {m1_std:.4f}  ({m1_n} images)
-M2 (原图):   {m2_mean:.4f} ± {m2_std:.4f}  ({m2_n} images)
-差值 (M1-M2): {m1_mean - m2_mean:.4f}
+M1 (enhanced): {m1_mean:.4f} ± {m1_std:.4f}  ({m1_n} images)
+M2 (original): {m2_mean:.4f} ± {m2_std:.4f}  ({m2_n} images)
+Difference (M1-M2): {m1_mean - m2_mean:.4f}
 {"=" * 55}
 """
     print(result)
@@ -120,7 +106,7 @@ M2 (原图):   {m2_mean:.4f} ± {m2_std:.4f}  ({m2_n} images)
     with open(os.path.join(OUTPUT_DIR, "edge_consistency_results.txt"), 'w') as f:
         f.write(result)
 
-    print(f"逐张结果已保存到 {OUTPUT_DIR}/edge_consistency_M1.csv 和 M2.csv")
+    print(f"Per-image results saved in {OUTPUT_DIR}")
 
 
 if __name__ == "__main__":
