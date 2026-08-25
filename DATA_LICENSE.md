@@ -23,6 +23,16 @@ The reported experiments use two aligned derivatives of ExDark:
 
 The enhanced images and depth maps are transformations generated for this dissertation. Their filenames preserve alignment with the original ExDark records. Publishing these derivatives does not replace the requirement to acknowledge ExDark or comply with its source terms.
 
+## Published derived datasets
+
+The prepared image-and-depth archives are published in the [ExDark Derived Datasets v1.0 GitHub Release](https://github.com/Yap2002/Enhancement-Assisted_Depth-Conditioned_Low-Light_Image_Generation_with_ControlNet/releases/tag/dataset-v1.0):
+
+- `exdark_m1_enhanced_images_and_depth_v1.0.tar.gz`;
+- `exdark_m2_baseline_images_and_depth_v1.0.tar.gz`;
+- `SHA256SUMS.txt`.
+
+These files are Release assets and are not stored in the repository's ordinary Git history. Verify a downloaded archive against `SHA256SUMS.txt` before use. Captions are not included in these two archives.
+
 ## Files included in this repository
 
 - `splits/all_images.txt`: upstream-style metadata index with one header row and 7,363 image records.
