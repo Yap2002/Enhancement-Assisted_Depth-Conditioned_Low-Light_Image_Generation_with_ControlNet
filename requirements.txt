@@ -6,13 +6,14 @@ lpips
 matplotlib
 numpy
 opencv-python
+open_clip_torch
 packaging
 pandas
 Pillow
+pyiqa
 pytorch-fid
 scikit-image
 torch
 torchvision
 tqdm
 transformers
-

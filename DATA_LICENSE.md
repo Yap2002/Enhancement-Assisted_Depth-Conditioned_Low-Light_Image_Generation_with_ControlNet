@@ -8,7 +8,7 @@ Authoritative sources:
 
 - Official project repository: https://github.com/cs-chan/Exclusively-Dark-Image-Dataset
 - Universiti Malaya Research Data Repository: https://doi.org/10.22452/RD/JUSQEK
-- Dataset paper: https://doi.org/10.1016/j.cviu.2019.04.010
+- Dataset paper: https://doi.org/10.1016/j.cviu.2018.10.010
 
 The official project repository provides a BSD 3-Clause licence file. Anyone redistributing data should retain the upstream copyright and licence notice and should review the authoritative source terms at the time of redistribution. The original ExDark images are not committed to this repository; users should obtain them from an official source.
 
@@ -30,7 +30,8 @@ The enhanced images and depth maps are transformations generated for this disser
 - `splits/validation.txt`: 711 experiment filenames.
 - `splits/test.txt`: 712 experiment filenames.
 - `results/`: numerical experiment outputs; no source images.
-- `figures/`: dissertation figures; no complete dataset archive.
+- `figures/`: training-loss plots; no source-image archive.
+- `dissertation/figures/`: the rendered figures used in the dissertation. Some composite figures contain selected ExDark examples, but this directory is not a complete dataset archive.
 
 ## Recommended archive contents
 

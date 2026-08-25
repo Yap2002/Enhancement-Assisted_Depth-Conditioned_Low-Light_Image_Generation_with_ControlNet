@@ -1,76 +1,182 @@
 # Enhancement-Assisted Depth-Conditioned Low-Light Image Generation with ControlNet
 
-This repository contains the final implementation and evaluation artefacts for an MSc dissertation investigating whether low-light enhancement before depth-conditioned ControlNet training improves image generation quality.
+This repository contains the implementation and evaluation artefacts for an MSc dissertation on enhancement-assisted pseudo-supervision for low-light image generation.
 
-The original notebook prototype is preserved on the `prototype/demo-v1` branch. The final implementation is maintained separately so that the experimental pipeline and results remain easy to inspect.
+The study compares two matched ControlNet routes:
 
-## Experimental design
+- **Baseline (M2):** pseudo-depth maps and captions are extracted from the original ExDark images.
+- **Enhancement-assisted (M1):** Zero-DCE is applied before pseudo-depth and caption extraction.
 
-Two matched ControlNet configurations are compared:
+The original low-light image remains the training target in both routes. The comparison therefore changes the source of the pseudo-conditions, rather than the target image domain.
 
-- **Enhanced (M1):** Zero-DCE-enhanced images with corresponding depth maps.
-- **Baseline (M2):** original low-light images with corresponding depth maps.
+## Evidence boundary
 
-Both configurations use the same training schedule and evaluation split. The committed split contains 5,692 training images, 711 validation images, and 712 test images.
+ExDark does not provide measured depth maps or verified image captions. The project evaluates generated-image fidelity, distributional realism, and adherence to route-specific pseudo-conditions. It does not claim direct depth or caption accuracy.
 
-## Repository structure
+The reported comparison uses one completed training run per route. The final training scripts do not record a training seed, so training-run variance cannot be estimated. Inference uses seed 42 and resets the generator for each sample.
+
+## Repository contents
 
 ```text
-src/          Training, inference, and batch generation
-evaluation/   Full-reference, no-reference, semantic, edge, and FID evaluation
-scripts/      Slurm job scripts used on the University of Leeds HPC service
-splits/       Exact train, validation, test, and complete filename lists
-results/      Per-image metrics and aggregate evaluation summaries
-figures/      Training-loss figures used during analysis
-DATA_LICENSE.md  Data provenance, redistribution, and citation information
+src/                    ControlNet training, checkpoint testing, and batch generation
+evaluation/             LPIPS, SSIM, edge, FID, NIQE, CLIP, and scene analysis
+scripts/                Slurm scripts retained from the University of Leeds HPC runs
+splits/                 Exact train, validation, test, and complete filename lists
+results/                Per-image metric files and aggregate summaries
+figures/                Training-loss plots
+dissertation/figures/   The 16 rendered figures used in the final dissertation
+DATA_LICENSE.md         ExDark provenance and redistribution guidance
+requirements.txt        Direct Python dependencies; not an exact package lock
 ```
+
+The original Kaggle preprocessing notebooks are retained on the [`prototype/demo-v1`](https://github.com/Yap2002/Enhancement-Assisted_Depth-Conditioned_Low-Light_Image_Generation_with_ControlNet/tree/prototype/demo-v1) branch:
+
+1. Zero-DCE image enhancement;
+2. Depth Anything depth estimation;
+3. BLIP-2 caption generation;
+4. the original ControlNet training prototype.
+
+## Dataset and split
+
+The project uses the public ExDark dataset. Obtain the source images from the [official repository](https://github.com/cs-chan/Exclusively-Dark-Image-Dataset) or the [Universiti Malaya Research Data Repository](https://doi.org/10.22452/RD/JUSQEK).
+
+The source collection contains 7,363 image records. After triplet validation, 7,115 usable samples were divided into:
+
+| Split | Images |
+| --- | ---: |
+| Training | 5,692 |
+| Validation | 711 |
+| Test | 712 |
+
+Use the committed files in `splits/` to reconstruct the reported partition. Do not create a new random split if the aim is to reproduce the dissertation comparison.
+
+The expected prepared datasets are:
+
+```text
+ablation_dataset/                 # M2 baseline
+  train|validation|test/
+    images/
+    depths/
+    captions.json
+
+hpc_ready_dataset/                # M1 enhancement-assisted
+  train|validation|test/
+    images/
+    depths/
+    captions.json
+```
+
+The original ExDark images, derived datasets, captions, and depth maps are not stored in ordinary Git history. See `DATA_LICENSE.md` before redistributing any source or derived data.
+
+## Models and recorded settings
+
+| Component | Recorded model or setting |
+| --- | --- |
+| Stable Diffusion backbone | `runwayml/stable-diffusion-v1-5` |
+| Initial ControlNet | `lllyasviel/sd-controlnet-depth` |
+| Zero-DCE checkpoint | `Epoch99.pth` |
+| Depth estimator | `LiheYoung/depth-anything-small-hf` |
+| Caption model | `Salesforce/blip2-opt-2.7b` |
+| Caption prompt | `A picture of` |
+| Caption decoding | `max_new_tokens=30` |
+| Resolution | 512 x 512 |
+| Learning rate | `1e-5` |
+| Per-device batch size | 1 |
+| Gradient accumulation | 4 |
+| Effective batch size | 4 |
+| Training steps | 10,000 |
+| Checkpoint interval | 2,000 steps |
+| Precision | FP16 |
+| Memory option | Gradient checkpointing |
+| Inference seed | 42, reset for each sample |
+| Inference steps | 30 |
+| Guidance scale | 5.0 |
+| ControlNet conditioning scale | 1.0 |
+
+Exact model commit hashes and the complete package environment were not retained. Model identifiers are therefore provided at repository level rather than as fully pinned revisions.
 
 ## Environment
 
-The experiments used Python 3.10, PyTorch, Diffusers, Accelerate, and CUDA on a Slurm-managed GPU cluster. Install the Python dependencies with:
+The experiments used Python 3.10, PyTorch, Diffusers, Accelerate, CUDA 12.4.1, and one GPU on a Slurm-managed cluster.
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-The shell scripts preserve the HPC configuration used for the reported experiments. Users on another system must update the virtual-environment, dataset, model-output, and project-root paths before running them.
+`requirements.txt` lists the direct dependencies used by the repository. It is not a lock file and does not reproduce the exact historical package versions. For a new reproduction, create and retain a lock file after testing the environment.
 
 ## Training
 
-The main implementation is `src/train_controlnet.py`. The two training configurations are represented by `scripts/submit.sh` and `scripts/submit_ablation.sh`.
+The training implementation is `src/train_controlnet.py`. The reported route configurations are preserved in:
 
-The reported run used 10,000 optimisation steps, gradient accumulation, mixed-precision training, gradient checkpointing, and checkpoints every 2,000 steps. Consult the Slurm scripts for the exact command-line arguments used on the cluster.
+- `scripts/submit.sh` for M1;
+- `scripts/submit_ablation.sh` for M2.
+
+The Slurm scripts are historical run records. They contain the original University of Leeds account paths and assume that the Python scripts and prepared datasets are available from the submission working directory. Before reuse, update:
+
+- the environment activation command;
+- project and dataset paths;
+- checkpoint output paths;
+- GPU partition and module names;
+- Python script paths.
+
+For example, a portable invocation should call `src/train_controlnet.py` and use absolute or project-root-relative dataset paths. Do not expect the retained Slurm files to run unchanged on another machine.
 
 ## Generation and evaluation
 
-`src/batch_generate.py` generates the matched M1 and M2 test outputs. Evaluation scripts report LPIPS, SSIM, CLIP similarity, NIQE, FID, edge consistency, random-pair lower bounds, and scene-level comparisons.
+`src/batch_generate.py` generates images for the two routes. Its recorded defaults are seed 42, 30 inference steps, guidance scale 5.0, and ControlNet conditioning scale 1.0.
 
-The principal human-readable result is `results/summary_baseline_enhanced.txt`. CSV files contain the corresponding per-image measurements.
+The evaluation directory contains scripts for:
 
-## Data availability
+- LPIPS and SSIM;
+- edge consistency;
+- FID;
+- NIQE;
+- CLIP similarity;
+- shuffled-pair lower-bound checks;
+- lighting and environment group analysis.
 
-The experiments use the public ExDark dataset. Download the original images from the [official ExDark repository](https://github.com/cs-chan/Exclusively-Dark-Image-Dataset) or the [Universiti Malaya Research Data Repository](https://researchdata.um.edu.my/dataset.xhtml?persistentId=doi:10.22452/RD/JUSQEK). The original images are not duplicated in this Git repository.
+Several evaluation scripts retain `~/nobackup` or `/users/fkwt0359/` paths from the final HPC runs. Update their path constants before executing them elsewhere.
 
-The exact experimental partitions are recorded in `splits/train.txt`, `splits/validation.txt`, and `splits/test.txt`. `splits/all_images.txt` is the ExDark metadata index: it contains one header row followed by 7,363 image records, rather than 7,364 images. The resulting experiment uses 5,692 training, 711 validation, and 712 test images.
+The planned test split contains 712 images. The principal generated-image comparisons contain 672 matched outputs because 40 caption keys used uppercase `.JPEG`, while the generation lookup accepted only `.jpg`, `.jpeg`, and `.png`. Edge and NIQE have additional metric-specific skipped samples. The relevant CSV and skipped-file records are included in `results/`.
 
-The two prepared variants are:
+### Result-version note
 
-- `ablation_dataset`: original low-light ExDark images and their estimated depth maps (M2/baseline).
-- `hpc_ready_dataset`: Zero-DCE-enhanced images and their estimated depth maps (M1/enhanced).
+Some committed per-image CSV files are retained evaluation snapshots rather than the final audited table used in the dissertation. In particular, `metrics_baseline.csv` and `metrics_enhanced.csv` contain 674 rows, while the final dissertation reports 672 matched outputs. The retained edge CSV files likewise contain two more rows than the final reported coverage. The exact two-row reconciliation record was not retained, so these files have not been edited retrospectively. The table below reproduces the final dissertation values; use the CSV files to inspect the retained measurements, not to infer that their row counts are identical to the final audit.
 
-Large derived-image archives and trained weights are kept outside ordinary Git history. A public archive should include a checksum manifest and preserve the filenames in `splits/`; its URL can be added here after upload. See `DATA_LICENSE.md` for provenance, attribution, and redistribution notes.
+## Main reported results
 
-## Reproducibility notes
+| Metric | Baseline M2 | Enhanced M1 | Preferred direction |
+| --- | ---: | ---: | --- |
+| LPIPS | 0.7168 | **0.7061** | Lower |
+| SSIM | **0.1796** | 0.1767 | Higher |
+| Edge consistency | 0.1875 | **0.2051** | Higher |
+| FID | 83.0217 | **76.1046** | Lower |
+| NIQE | 5.5188 | **4.8475** | Lower |
+| CLIP score | 29.1822 | **29.8411** | Higher |
 
-- M1 corresponds to the enhancement-assisted configuration.
-- M2 corresponds to the original-input baseline.
-- The `baseline` and `enhanced` result filenames are descriptive aliases retained for clarity.
-- Skipped-image lists are included so that metric sample sizes can be audited.
-- Large checkpoints, caches, generated-image directories, and raw Slurm logs are intentionally excluded.
-- Reconstructing the reported partitions requires using the committed manifests rather than creating a new random split.
+These are single-run results with metric-specific sample coverage. They support better generation performance and stronger condition adherence under the reported configuration, but they do not establish condition accuracy or repeated-run statistical significance.
+
+## Files not included
+
+The following files are intentionally absent because of size, licensing, availability, or incomplete historical retention:
+
+- original ExDark images;
+- prepared M1 and M2 dataset directories;
+- trained ControlNet checkpoints;
+- generated test-image directories;
+- complete raw Slurm logs;
+- an exact historical package lock;
+- an explicit recorded training seed;
+- exact cached model commit revisions.
+
+The repository is sufficient to inspect the implementation, experimental settings, splits, evaluation outputs, and dissertation figures. It is not a self-contained one-command reproduction archive without the external data and model artefacts listed above.
 
 ## Dataset citation
 
-If you use ExDark, cite the dataset paper:
+If you use ExDark, cite:
 
-> Y. P. Loh and C. S. Chan, "Getting to Know Low-light Images with The Exclusively Dark Dataset," *Computer Vision and Image Understanding*, 2019. https://doi.org/10.1016/j.cviu.2019.04.010
+> Y. P. Loh and C. S. Chan, "Getting to Know Low-light Images with The Exclusively Dark Dataset," *Computer Vision and Image Understanding*, 2019. https://doi.org/10.1016/j.cviu.2018.10.010
