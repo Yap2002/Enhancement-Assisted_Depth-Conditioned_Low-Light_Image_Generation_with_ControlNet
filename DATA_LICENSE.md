@@ -25,13 +25,13 @@ The enhanced images and depth maps are transformations generated for this disser
 
 ## Published derived datasets
 
-The prepared image-and-depth archives are published in the [ExDark Derived Datasets v1.0 GitHub Release](https://github.com/Yap2002/Enhancement-Assisted_Depth-Conditioned_Low-Light_Image_Generation_with_ControlNet/releases/tag/dataset-v1.0):
+The prepared datasets are published in the [Dataset download GitHub Release](https://github.com/Yap2002/Enhancement-Assisted_Depth-Conditioned_Low-Light_Image_Generation_with_ControlNet/releases/tag/dataset-v1.0):
 
-- `exdark_m1_enhanced_images_and_depth_v1.0.tar.gz`;
-- `exdark_m2_baseline_images_and_depth_v1.0.tar.gz`;
-- `SHA256SUMS.txt`.
+- `Enhanced_dataset.zip.part00` to `Enhanced_dataset.zip.part04`;
+- `Baseline_dataset.zip.part00` to `Baseline_dataset.zip.part05`;
+- `ZIP_SHA256SUMS.txt`.
 
-These files are Release assets and are not stored in the repository's ordinary Git history. Verify a downloaded archive against `SHA256SUMS.txt` before use. Captions are not included in these two archives.
+These files are Release assets and are not stored in the repository's ordinary Git history. Download every part for the required dataset, reconstruct the ZIP in filename order, and verify it against `ZIP_SHA256SUMS.txt` before use. Both reconstructed archives include images, estimated depth maps, and captions.
 
 ## Files included in this repository
 

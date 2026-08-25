@@ -68,13 +68,13 @@ hpc_ready_dataset/                # M1 enhancement-assisted
 
 The original ExDark images, derived datasets, captions, and depth maps are not stored in ordinary Git history. See `DATA_LICENSE.md` before redistributing any source or derived data.
 
-The two prepared image-and-depth datasets are available in the [ExDark Derived Datasets v1.0 GitHub Release](https://github.com/Yap2002/Enhancement-Assisted_Depth-Conditioned_Low-Light_Image_Generation_with_ControlNet/releases/tag/dataset-v1.0):
+The two prepared datasets are available in the [Dataset download GitHub Release](https://github.com/Yap2002/Enhancement-Assisted_Depth-Conditioned_Low-Light_Image_Generation_with_ControlNet/releases/tag/dataset-v1.0):
 
-- `exdark_m1_enhanced_images_and_depth_v1.0.tar.gz` contains the M1 enhancement-assisted images and estimated depth maps;
-- `exdark_m2_baseline_images_and_depth_v1.0.tar.gz` contains the M2 baseline images and estimated depth maps;
-- `SHA256SUMS.txt` provides integrity checks for both archives.
+- `Enhanced_dataset.zip.part00` to `Enhanced_dataset.zip.part04` contain the M1 enhancement-assisted images, estimated depth maps, and captions;
+- `Baseline_dataset.zip.part00` to `Baseline_dataset.zip.part05` contain the M2 baseline images, estimated depth maps, and captions;
+- `ZIP_SHA256SUMS.txt` provides integrity checks for both reconstructed ZIP archives.
 
-Captions are not included in these two archives. Use the committed split files and the documented BLIP-2 settings to reconstruct them where required.
+Download every part for the required route and follow the reconstruction commands on the Release page. The reconstructed archives include the `train`, `val`, and `test` caption files used by the experiments.
 
 ## Models and recorded settings
 
