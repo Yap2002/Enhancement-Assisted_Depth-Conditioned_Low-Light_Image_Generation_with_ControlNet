@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-"""Compute shuffled-pair reference values for paired image metrics.
-
-A fixed cyclic shift creates a reproducible derangement. Comparing matched
-and shuffled targets indicates whether each metric responds to the intended
-image correspondence rather than only to general low-light appearance.
-"""
-
 import os
 import sys
 import json
