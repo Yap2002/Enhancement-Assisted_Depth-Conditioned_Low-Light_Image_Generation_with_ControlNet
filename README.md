@@ -123,7 +123,7 @@ The Slurm scripts are historical run records. They contain the original Universi
 - GPU partition and module names;
 - Python script paths.
 
-For example, a portable invocation should call `src/train_controlnet.py` and use absolute or project-root-relative dataset paths. Do not expect the retained Slurm files to run unchanged on another machine.
+For example, a portable invocation should call `src/train_controlnet.py` and use absolute or project-root-relative dataset paths.
 
 ## Generation and evaluation
 
@@ -165,12 +165,9 @@ These are single-run results with metric-specific sample coverage. They support 
 The following files are intentionally absent because of size, licensing, availability, or incomplete historical retention:
 
 - original ExDark images;
-- prepared M1 and M2 dataset directories;
-- trained ControlNet checkpoints;
 - generated test-image directories;
 - complete raw Slurm logs;
 - an exact historical package lock;
-- an explicit recorded training seed;
 - exact cached model commit revisions.
 
 The repository is sufficient to inspect the implementation, experimental settings, splits, evaluation outputs, and dissertation figures. It is not a self-contained one-command reproduction archive without the external data and model artefacts listed above.
