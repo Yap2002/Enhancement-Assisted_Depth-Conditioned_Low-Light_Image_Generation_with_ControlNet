@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-"""Run the complete baseline-versus-enhanced evaluation.
-
-Existing LPIPS, SSIM, and edge-consistency CSV files are reused. FID, NIQE,
-and CLIP metrics are computed here, including real-image reference values.
-Baseline denotes M2 (original input); enhanced denotes M1 (Zero-DCE input).
-"""
-
 import os
 import json
 import csv
