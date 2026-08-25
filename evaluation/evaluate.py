@@ -1,19 +1,3 @@
-"""Compare generated images with the original low-light targets.
-
-Examples:
-    python evaluate.py \
-        --generated_dir ./eval_results/M1_generated \
-        --gt_dir ./hpc_ready_dataset/test/images \
-        --output_csv ./eval_results/M1_metrics.csv
-
-    python evaluate.py \
-        --generated_dir ./eval_results/M2_generated \
-        --gt_dir ./ablation_dataset/test/images \
-        --output_csv ./eval_results/M2_metrics.csv
-
-Requires lpips and scikit-image.
-"""
-
 import os
 import argparse
 import csv
